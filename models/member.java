@@ -1,10 +1,12 @@
 package models;
 
-    public class member extends user{
+import exceptions.ValidationException;
+
+public class member extends user{
         private String Birthday;
         private String adresse;
         private String phone;
-        private String Weight;
+        private double Weight;
         private boolean firstLogin;
 
     public member(){
@@ -33,10 +35,13 @@ package models;
         this.phone = phone;
         }
 
-    public String getWeight() {
+    public double getWeight() {
         return Weight;
         }
-    public void setWeight(String weight) {
+    public void setWeight(double weight) throws ValidationException{
+        if (weight <= 0) {
+            throw new ValidationException("weight", "Weight must be a positive number");
+        }
         this.Weight = weight;
         }
 

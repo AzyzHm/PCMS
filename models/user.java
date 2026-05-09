@@ -1,4 +1,5 @@
 package models;
+import exceptions.ValidationException;
 
 public class user {
     protected int id;
@@ -57,7 +58,10 @@ public class user {
         return email;
     }
 
-    public void setEmail(String email) {
+    public void setEmail(String email) throws ValidationException {
+         if (email == null || !email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            throw new ValidationException("email", "Invalid email format");
+        }
         this.email = email;
     }
 
@@ -65,7 +69,10 @@ public class user {
         return login;
     }
 
-    public void setLogin(String login) {
+    public void setLogin(String login) throws ValidationException {
+        if (login == null || login.length() < 6) {
+            throw new ValidationException("login", "Login must be at least 6 characters long");
+        }
         this.login = login;
     }
 
@@ -73,7 +80,10 @@ public class user {
         return password;
     }
 
-    public void setPassword(String password) {
+    public void setPassword(String password) throws ValidationException {
+        if (password == null || password.length() < 8) {
+            throw new ValidationException("password", "Password must be at least 8 characters long");
+        }
         this.password = password;
     }
 }
