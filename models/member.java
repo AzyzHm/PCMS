@@ -3,22 +3,22 @@ package models;
 import exceptions.ValidationException;
 
 public class member extends user{
-        private String Birthday;
+        private String DateNaissance;
         private String adresse;
-        private String phone;
-        private double Weight;
-        private boolean firstLogin;
+        private String Telephone;
+        private double Poids;
+        private boolean PremierLogin;
 
     public member(){
         this.setRole("MEMBER");
-        this.firstLogin = true;
+        this.PremierLogin = true;
         }
 
     public String getBirthday() {
-        return Birthday;
+        return DateNaissance;
         }
-    public void setBirthday(String birthday) {
-        this.Birthday = birthday;
+    public void setBirthday(String dateNaissance) {
+        this.DateNaissance = dateNaissance;
         }
 
     public String getAdresse() {
@@ -29,26 +29,26 @@ public class member extends user{
         }
 
     public String getPhone() {
-        return phone;
+        return Telephone;
         }
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public void setPhone(String telephone) {
+        this.Telephone = telephone;
         }
 
     public double getWeight() {
-        return Weight;
+        return Poids;
         }
     public void setWeight(double weight) throws ValidationException{
         if (weight <= 0) {
-            throw new ValidationException("weight", "Weight must be a positive number");
+            throw new ValidationException("Poids", "Poids doit être un nombre positif");
         }
-        this.Weight = weight;
+        this.Poids = weight;
         }
 
     public boolean isFirstLogin() {
-        return firstLogin;
+        return PremierLogin;
         }
-    public void setFirstLogin(boolean firstLogin) {
-        this.firstLogin = firstLogin;
+    public void setFirstLogin(boolean PremierLogin) {
+        this.PremierLogin = PremierLogin;
         }
 }
