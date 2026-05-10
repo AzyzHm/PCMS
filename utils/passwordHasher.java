@@ -12,7 +12,7 @@ public class passwordHasher {
             byte[] hash = md.digest(password.getBytes());
             return Base64.getEncoder().encodeToString(hash);
         } catch (NoSuchAlgorithmException e) {
-            throw new SecurityException("Hashing algorithm not found", e);
+            throw new SecurityException("Algorithme de hachage non trouvé", e);
         }
     }
 }

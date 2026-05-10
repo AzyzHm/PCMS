@@ -75,9 +75,9 @@ public class databaseConnection {
                 String insertAdmin = "INSERT INTO users (role, login, password, nom, first_login) VALUES ('ADMIN', 'AzyzHm', '" + hashedAdminPass + "', 'Azyz', 0)";
                 stmt.execute(insertAdmin);
             }
-            System.out.println("Database initialized successfully.");
+            System.out.println("Base de données initialisée avec succès.");
         } catch (SQLException e) {
-            throw new DatabaseException("Failed to initialize database tables", e);
+            throw new DatabaseException("Impossible d'initialiser les tables de la base de données", e);
         }
     } 
 }

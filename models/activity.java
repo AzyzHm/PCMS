@@ -6,17 +6,17 @@ public class activity {
     private int id;
     private String nom;
     private String description;
-    private int maxCapacity;
-    private String Time;
+    private int CapaciteMax;
+    private String Horaire;
 
     public activity() {}
 
-    public activity(int id, String nom, String description, int maxCapacity, String Time) {
+    public activity(int id, String nom, String description, int maxCapacity, String Horaire) {
         this.id = id;
         this.nom = nom;
         this.description = description;
-        this.maxCapacity = maxCapacity;
-        this.Time = Time;
+        this.CapaciteMax = maxCapacity;
+        this.Horaire = Horaire;
     }
 
     public int getId() {
@@ -31,7 +31,7 @@ public class activity {
     }
     public void setNom(String nom) throws ValidationException {
         if (nom == null || nom.trim().isEmpty()) {
-            throw new ValidationException("nom", "Name cannot be null or empty");
+            throw new ValidationException("nom", "Le nom de l'activité ne peut pas être vide");
         }
         this.nom = nom;
     }
@@ -44,19 +44,19 @@ public class activity {
     }
 
     public int getMaxCapacity() {
-        return maxCapacity;
+        return CapaciteMax;
     }
     public void setMaxCapacity(int maxCapacity) throws ValidationException {
         if (maxCapacity <= 0) {
-            throw new ValidationException("maxCapacity", "Maximum capacity must be a positive number");
+            throw new ValidationException("CapaciteMax", "La capacité maximale doit être un nombre positif");
         }
-        this.maxCapacity = maxCapacity;
+        this.CapaciteMax = maxCapacity;
     }
 
     public String getTime() {
-        return Time;
+        return Horaire;
     }
-    public void setTime(String Time) {
-        this.Time = Time;
+    public void setTime(String Horaire) {
+        this.Horaire = Horaire;
     }
 }

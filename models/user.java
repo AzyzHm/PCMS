@@ -60,7 +60,7 @@ public class user {
 
     public void setEmail(String email) throws ValidationException {
          if (email == null || !email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
-            throw new ValidationException("email", "Invalid email format");
+            throw new ValidationException("email", "Format d'email invalide");
         }
         this.email = email;
     }
@@ -71,7 +71,7 @@ public class user {
 
     public void setLogin(String login) throws ValidationException {
         if (login == null || login.length() < 6) {
-            throw new ValidationException("login", "Login must be at least 6 characters long");
+            throw new ValidationException("login", "Le login doit contenir au moins 6 caractères");
         }
         this.login = login;
     }
@@ -82,7 +82,7 @@ public class user {
 
     public void setPassword(String password) throws ValidationException {
         if (password == null || password.length() < 8) {
-            throw new ValidationException("password", "Password must be at least 8 characters long");
+            throw new ValidationException("password", "Le mot de passe doit contenir au moins 8 caractères");
         }
         this.password = password;
     }
