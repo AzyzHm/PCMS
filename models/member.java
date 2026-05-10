@@ -14,10 +14,10 @@ public class member extends user{
         this.PremierLogin = true;
         }
 
-    public String getBirthday() {
+    public String getDateNaissance() {
         return DateNaissance;
         }
-    public void setBirthday(String dateNaissance) {
+    public void setDateNaissance(String dateNaissance) {
         this.DateNaissance = dateNaissance;
         }
 
@@ -28,21 +28,21 @@ public class member extends user{
         this.adresse = adresse;
         }
 
-    public String getPhone() {
+    public String getTelephone() {
         return Telephone;
         }
-    public void setPhone(String telephone) {
+    public void setTelephone(String telephone) {
         this.Telephone = telephone;
         }
 
-    public double getWeight() {
+    public double getPoids() {
         return Poids;
         }
-    public void setWeight(double weight) throws ValidationException{
-        if (weight <= 0) {
+    public void setPoids(double poids) throws ValidationException{
+        if (poids <= 0) {
             throw new ValidationException("Poids", "Poids doit être un nombre positif");
         }
-        this.Poids = weight;
+        this.Poids = poids;
         }
 
     public boolean isFirstLogin() {

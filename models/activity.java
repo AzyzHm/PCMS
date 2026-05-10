@@ -11,11 +11,11 @@ public class activity {
 
     public activity() {}
 
-    public activity(int id, String nom, String description, int maxCapacity, String Horaire) {
+    public activity(int id, String nom, String description, int CapaciteMax, String Horaire) {
         this.id = id;
         this.nom = nom;
         this.description = description;
-        this.CapaciteMax = maxCapacity;
+        this.CapaciteMax = CapaciteMax;
         this.Horaire = Horaire;
     }
 
@@ -43,20 +43,20 @@ public class activity {
         this.description = description;
     }
 
-    public int getMaxCapacity() {
+    public int getCapaciteMax() {
         return CapaciteMax;
     }
-    public void setMaxCapacity(int maxCapacity) throws ValidationException {
-        if (maxCapacity <= 0) {
+    public void setCapaciteMax(int CapaciteMax) throws ValidationException {
+        if (CapaciteMax <= 0) {
             throw new ValidationException("CapaciteMax", "La capacité maximale doit être un nombre positif");
         }
-        this.CapaciteMax = maxCapacity;
+        this.CapaciteMax = CapaciteMax;
     }
 
-    public String getTime() {
+    public String getHoraire() {
         return Horaire;
     }
-    public void setTime(String Horaire) {
+    public void setHoraire(String Horaire) {
         this.Horaire = Horaire;
     }
 }
