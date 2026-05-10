@@ -11,7 +11,7 @@ import exceptions.DatabaseException;
 import exceptions.SecurityException;
 
 public class databaseConnection {
-    private static final String DB_NAME = "databse/powerhouse.db";
+    private static final String DB_NAME = "database/powerhouse.db";
     private static final String URL = "jdbc:sqlite:" + DB_NAME;
 
 
@@ -72,7 +72,7 @@ public class databaseConnection {
             var rs = stmt.executeQuery(checkAdmin);
             if (rs.next() && rs.getInt(1) == 0) {
                 String hashedAdminPass = passwordHasher.hashPassword("AzyzHm0110");
-                String insertAdmin = "INSERT INTO users (role, login, password, nom, first_login) VALUES ('ADMIN', 'AzyzHm', '" + hashedAdminPass + "', 'Azyz', 0)";
+                String insertAdmin = "INSERT INTO users (role, login, password, email, nom, first_login) VALUES ('ADMIN', 'AzyzHm', '" + hashedAdminPass + "','AzyzHm@gmail.com' ,'Azyz', 0)";
                 stmt.execute(insertAdmin);
             }
             System.out.println("Base de données initialisée avec succès.");

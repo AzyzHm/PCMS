@@ -1,4 +1,4 @@
-package controller;
+package controllers;
 
 import dao.memberDAO;
 import models.user;
