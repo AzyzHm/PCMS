@@ -43,6 +43,11 @@ public class adminDashboard extends JFrame{
     private final DefaultTableModel enrollmentsTableModel = createReadOnlyTableModel("ID", "Membre", "Activité", "Statut");
     private final JTable enrollmentsTable = new JTable(enrollmentsTableModel);
 
+    // table de statistiques
+    private final DefaultTableModel activityStatsTableModel = createReadOnlyTableModel("Activité", "Capacité", "Inscrits");
+    private final DefaultTableModel memberStatsTableModel   = createReadOnlyTableModel("Nom", "Prénom", "Login", "Activités acceptées");
+    private final JLabel popularActivityLabel = new JLabel("—");
+
     public adminDashboard() {
         setTitle("PowerHouse : Tableau de bord d'administration");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -58,11 +63,13 @@ public class adminDashboard extends JFrame{
         applyTableStyle(activitiesTable);
         applyTableStyle(membersTable);
         applyTableStyle(enrollmentsTable);
+        
 
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Activités", buildActivitiesTab());
         tabbedPane.addTab("Membres",      buildMembersTab());
         tabbedPane.addTab("Inscriptions", buildEnrollmentsTab());
+        tabbedPane.addTab("Statistiques", buildStatsTab());
 
 
         JPanel headerBar = buildHeaderBar();
@@ -308,6 +315,42 @@ public class adminDashboard extends JFrame{
         } catch (powerHouseException ex) { showError(this, ex.getMessage()); }
     }
     
+    private JPanel buildStatsTab() {
+        JTable activityStatsTable = new JTable(activityStatsTableModel);
+        JTable memberStatsTable   = new JTable(memberStatsTableModel);
+        applyTableStyle(activityStatsTable);
+        applyTableStyle(memberStatsTable);
+
+        JButton popularActivityButton = createButton("Calculer l'activité la plus populaire", COLOUR_ACCENT);
+        JButton refreshTablesButton   = createButton("Actualiser les tableaux", COLOUR_SUCCESS);
+
+        popularActivityButton.addActionListener(e -> {
+            try { popularActivityLabel.setText(adminController.getPopularityReport()); }
+            catch (powerHouseException ex) { showError(this, ex.getMessage()); }
+        });
+        refreshTablesButton.addActionListener(e -> { refreshActivityStats(); refreshMemberStats(); });
+
+        popularActivityLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
+        popularActivityLabel.setForeground(COLOUR_DANGER);
+
+        JPanel popularRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+        popularRow.add(new JLabel("Activité la plus populaire :"));
+        popularRow.add(popularActivityLabel);
+        popularRow.add(popularActivityButton);
+
+        JPanel tablesPanel = new JPanel(new GridLayout(1, 2, 10, 0));
+        tablesPanel.add(createTitledScrollPane("Participants par activité", activityStatsTable));
+        tablesPanel.add(createTitledScrollPane("Membres les plus actifs (Top 10)", memberStatsTable));
+
+        refreshTablesButton.setPreferredSize(new Dimension(200, 32));
+
+        JPanel statsPanel = new JPanel(new BorderLayout(0, 8));
+        statsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        statsPanel.add(popularRow,   BorderLayout.NORTH);
+        statsPanel.add(tablesPanel,  BorderLayout.CENTER);
+        statsPanel.add(buildButtonPanel(refreshTablesButton), BorderLayout.SOUTH);
+        return statsPanel;
+    }
 
     private JPanel buildTabPanel(JPanel formPanel, JButton[] actionButtons, JTable dataTable) {
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, formPanel, new JScrollPane(dataTable));
@@ -337,10 +380,18 @@ public class adminDashboard extends JFrame{
         return label;
     }
 
+    private JScrollPane createTitledScrollPane(String title, JTable table) {
+        JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.setBorder(BorderFactory.createTitledBorder(title));
+        return scrollPane;
+    }
+
     private void refreshAll() {
         refreshActivitiesTable();
         refreshMembersTable();
         refreshEnrollmentsTable();
+        refreshActivityStats();
+        refreshMemberStats();
     }
 
     private void refreshActivitiesTable() {
@@ -365,6 +416,22 @@ public class adminDashboard extends JFrame{
             enrollmentsTableModel.setRowCount(0);
             adminController.listAllEnrollments().forEach(row -> enrollmentsTableModel.addRow(
                 new Object[]{row[0], row[2] + " " + row[3], row[5], row[6]}));
+        } catch (powerHouseException ex) { showError(this, ex.getMessage()); }
+    }
+
+        private void refreshActivityStats() {
+        try {
+            activityStatsTableModel.setRowCount(0);
+            adminController.listActivitiesWithCount().forEach(row ->
+                activityStatsTableModel.addRow(new Object[]{row[1], row[3], row[5]}));
+        } catch (powerHouseException ex) { showError(this, ex.getMessage()); }
+    }
+
+    private void refreshMemberStats() {
+        try {
+            memberStatsTableModel.setRowCount(0);
+            adminController.getMostActiveMembers().forEach(row ->
+                memberStatsTableModel.addRow(new Object[]{row[1], row[2], row[3], row[4]}));
         } catch (powerHouseException ex) { showError(this, ex.getMessage()); }
     }
 

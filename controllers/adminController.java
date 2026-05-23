@@ -5,6 +5,7 @@ import java.util.List;
 import dao.activityDAO;
 import dao.memberDAO;
 import dao.enrollmentDAO;
+import dao.statisticsDAO;
 
 import models.activity;
 import models.member;
@@ -18,11 +19,13 @@ public class adminController {
     private activityDAO activityDAO;
     private memberDAO memberDAO;
     private enrollmentDAO enrollmentDAO;
+    private statisticsDAO statsDAO;
     
     public adminController() {
         this.activityDAO = new activityDAO();
         this.memberDAO = new memberDAO();
         this.enrollmentDAO = new enrollmentDAO();
+        this.statsDAO = new statisticsDAO();
     }
 
     // Gestion des activités
@@ -95,5 +98,14 @@ public class adminController {
 
     public void deleteEnrollment(int enrollmentId) throws DatabaseException {
         enrollmentDAO.deleteEnrollment(enrollmentId);
+    }
+
+    // Statistiques
+    public String getPopularityReport() throws DatabaseException {
+        return statsDAO.getMostPopularActivity();
+    }
+
+    public List<Object[]> getMostActiveMembers() throws DatabaseException {
+        return enrollmentDAO.getMostActiveMembers();
     }
 }
