@@ -7,6 +7,8 @@ import models.user;
 import models.member;
 import models.admin;
 
+import static utils.guiHelper.*;
+
 import controllers.authController;
 import exceptions.powerHouseException;
 
@@ -17,13 +19,13 @@ public class loginView extends JFrame {
     private JPasswordField passwordField;
 
     public loginView() {
-        setTitle("PowerHouse – Connexion");
+        setTitle("PowerHouse Login");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
         setSize(800, 600);
         setLocationRelativeTo(null);
         setLayout(null);
-        getContentPane().setBackground(new Color(0x1B1931));
+        getContentPane().setBackground(COLOUR_BACKGROUND);
 
         ImageIcon icon = new ImageIcon("icons/Login.png");
         setIconImage(icon.getImage());
@@ -62,7 +64,6 @@ public class loginView extends JFrame {
         add(loginButton);
 
         loginButton.addActionListener(e -> attemptLogin());
-        setVisible(true);
     }
 
     private void attemptLogin() {
@@ -97,6 +98,6 @@ public class loginView extends JFrame {
 
     // pour les tests
     public static void main(String[] args) {
-        new loginView();
+        SwingUtilities.invokeLater(() -> new loginView().setVisible(true));
     }
 }
