@@ -39,6 +39,10 @@ public class adminDashboard extends JFrame{
     private final JTextField   memberAddressField   = new JTextField();
     private int selectedMemberId = -1;
 
+    // table des inscriptions
+    private final DefaultTableModel enrollmentsTableModel = createReadOnlyTableModel("ID", "Membre", "Activité", "Statut");
+    private final JTable enrollmentsTable = new JTable(enrollmentsTableModel);
+
     public adminDashboard() {
         setTitle("PowerHouse : Tableau de bord d'administration");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -53,11 +57,14 @@ public class adminDashboard extends JFrame{
 
         applyTableStyle(activitiesTable);
         applyTableStyle(membersTable);
+        applyTableStyle(enrollmentsTable);
 
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Activités", buildActivitiesTab());
         tabbedPane.addTab("Membres",      buildMembersTab());
-        
+        tabbedPane.addTab("Inscriptions", buildEnrollmentsTab());
+
+
         JPanel headerBar = buildHeaderBar();
         JPanel rootPanel = new JPanel(new BorderLayout());
         rootPanel.setBackground(COLOUR_BACKGROUND);
@@ -265,6 +272,41 @@ public class adminDashboard extends JFrame{
         selectedMemberId = -1;
         membersTable.clearSelection();
     }
+
+    private JPanel buildEnrollmentsTab() {
+        JButton validateButton = createButton("✔ Valider",   COLOUR_SUCCESS);
+        JButton refuseButton   = createButton("✕ Refuser",   COLOUR_DANGER);
+        JButton deleteButton   = createButton("Supprimer",   COLOUR_MUTED);
+        JButton refreshButton  = createButton("Actualiser",  COLOUR_ACCENT);
+
+        validateButton.addActionListener(e -> applyEnrollmentAction(id -> adminController.validateEnrollment(id)));
+        refuseButton.addActionListener(e   -> applyEnrollmentAction(id -> adminController.refuseEnrollment(id)));
+        deleteButton.addActionListener(e   -> {
+            if (enrollmentsTable.getSelectedRow() < 0) { showWarning(this ,"Veuillez sélectionner une inscription."); return; }
+            if (!askConfirmation(this, "Supprimer cette inscription définitivement ?")) return;
+            applyEnrollmentAction(id -> adminController.deleteEnrollment(id));
+        });
+        refreshButton.addActionListener(e -> refreshEnrollmentsTable());
+
+        applyTableStyle(enrollmentsTable);
+        JPanel panel = new JPanel(new BorderLayout(0, 8));
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        panel.add(new JScrollPane(enrollmentsTable), BorderLayout.CENTER);
+        panel.add(buildButtonPanel(validateButton, refuseButton, deleteButton, refreshButton), BorderLayout.SOUTH);
+        return panel;
+    }
+
+    @FunctionalInterface
+    interface EnrollmentOperation { void execute(int enrollmentId) throws powerHouseException; }
+
+    private void applyEnrollmentAction(EnrollmentOperation operation) {
+        int selectedRow = enrollmentsTable.getSelectedRow();
+        if (selectedRow < 0) { showWarning(this, "Veuillez sélectionner une inscription."); return; }
+        try {
+            operation.execute((int) enrollmentsTableModel.getValueAt(selectedRow, 0));
+            refreshEnrollmentsTable();
+        } catch (powerHouseException ex) { showError(this, ex.getMessage()); }
+    }
     
 
     private JPanel buildTabPanel(JPanel formPanel, JButton[] actionButtons, JTable dataTable) {
@@ -298,6 +340,7 @@ public class adminDashboard extends JFrame{
     private void refreshAll() {
         refreshActivitiesTable();
         refreshMembersTable();
+        refreshEnrollmentsTable();
     }
 
     private void refreshActivitiesTable() {
@@ -317,6 +360,13 @@ public class adminDashboard extends JFrame{
         } catch (powerHouseException ex) { showError(this, ex.getMessage()); }
     }
 
+    private void refreshEnrollmentsTable() {
+        try {
+            enrollmentsTableModel.setRowCount(0);
+            adminController.listAllEnrollments().forEach(row -> enrollmentsTableModel.addRow(
+                new Object[]{row[0], row[2] + " " + row[3], row[5], row[6]}));
+        } catch (powerHouseException ex) { showError(this, ex.getMessage()); }
+    }
 
 
     public static void main(String[] args) {

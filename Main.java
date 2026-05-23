@@ -1,4 +1,4 @@
-import javax.swing.JOptionPane;
+import javax.swing.*;
 
 import config.databaseConnection;
 
@@ -32,6 +32,6 @@ public class Main {
             System.exit(1); 
         }   
         
-        new loginView();
+        SwingUtilities.invokeLater(() -> {new loginView().setVisible(true);});
     }
 }

@@ -4,6 +4,7 @@ import java.util.List;
 
 import dao.activityDAO;
 import dao.memberDAO;
+import dao.enrollmentDAO;
 
 import models.activity;
 import models.member;
@@ -16,12 +17,15 @@ public class adminController {
 
     private activityDAO activityDAO;
     private memberDAO memberDAO;
-
+    private enrollmentDAO enrollmentDAO;
+    
     public adminController() {
         this.activityDAO = new activityDAO();
         this.memberDAO = new memberDAO();
+        this.enrollmentDAO = new enrollmentDAO();
     }
 
+    // Gestion des activités
     public void createActivity(String nom, String desc, int cap, String horaires)
             throws DatabaseException, ValidationException {
         activity act = new activity();
@@ -59,6 +63,7 @@ public class adminController {
         return activityDAO.getFullActivities();
     }
 
+    // Gestion des membres
     public void registerMember(member member) throws DatabaseException, ValidationException, SecurityException {
         memberDAO.addMember(member);
     }
@@ -73,5 +78,22 @@ public class adminController {
 
     public List<member> listAllMembers() throws DatabaseException {
         return memberDAO.getAllMembers();
+    }
+
+    // Gestion des inscriptions
+    public List<Object[]> listAllEnrollments() throws DatabaseException {
+        return enrollmentDAO.getAllEnrollments();
+    }
+
+    public void validateEnrollment(int enrollmentId) throws DatabaseException {
+        enrollmentDAO.updateStatus(enrollmentId, "ACCEPTEE");
+    }
+
+    public void refuseEnrollment(int enrollmentId) throws DatabaseException {
+        enrollmentDAO.updateStatus(enrollmentId, "REFUSEE");
+    }
+
+    public void deleteEnrollment(int enrollmentId) throws DatabaseException {
+        enrollmentDAO.deleteEnrollment(enrollmentId);
     }
 }
