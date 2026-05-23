@@ -4,16 +4,19 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
+import controllers.adminController;
+
+import models.member;
+
 import static utils.guiHelper.*;
 
 import exceptions.powerHouseException;
-
-import controllers.adminController;
 
 public class adminDashboard extends JFrame{
 
     private final adminController adminController = new adminController();
 
+    // Table des activités
     private final DefaultTableModel activitiesTableModel = createReadOnlyTableModel("ID", "Nom", "Description", "Capacité", "Horaires", "Inscrits");
     private final JTable     activitiesTable       = new JTable(activitiesTableModel);
     private final JTextField activityNameField     = new JTextField();
@@ -21,6 +24,20 @@ public class adminDashboard extends JFrame{
     private final JTextField activityCapacityField = new JTextField(5);
     private final JTextField activityScheduleField = new JTextField();
     private int selectedActivityId = -1;
+
+    // table des membres
+    private final DefaultTableModel membersTableModel   = createReadOnlyTableModel( "ID", "Nom", "Prénom", "Login", "Email", "Téléphone", "Date naiss.", "Poids");
+    private final JTable       membersTable         = new JTable(membersTableModel);
+    private final JTextField   memberLastNameField  = new JTextField();
+    private final JTextField   memberFirstNameField = new JTextField();
+    private final JTextField   memberLoginField     = new JTextField();
+    private final JPasswordField memberPasswordField= new JPasswordField();
+    private final JTextField   memberEmailField     = new JTextField();
+    private final JTextField   memberPhoneField     = new JTextField();
+    private final JTextField   memberBirthDateField = new JTextField();
+    private final JTextField   memberWeightField    = new JTextField(5);
+    private final JTextField   memberAddressField   = new JTextField();
+    private int selectedMemberId = -1;
 
     public adminDashboard() {
         setTitle("PowerHouse : Tableau de bord d'administration");
@@ -35,9 +52,11 @@ public class adminDashboard extends JFrame{
         setIconImage(icon.getImage());
 
         applyTableStyle(activitiesTable);
+        applyTableStyle(membersTable);
 
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Activités", buildActivitiesTab());
+        tabbedPane.addTab("Membres",      buildMembersTab());
         
         JPanel headerBar = buildHeaderBar();
         JPanel rootPanel = new JPanel(new BorderLayout());
@@ -152,6 +171,102 @@ public class adminDashboard extends JFrame{
         return panel;
     }
 
+    private JPanel buildMembersTab() {
+        JPanel formPanel = createFormPanel("Membre");
+        formPanel.add(rightAlignedLabel("Nom :"));              formPanel.add(memberLastNameField);
+        formPanel.add(rightAlignedLabel("Prénom :"));           formPanel.add(memberFirstNameField);
+        formPanel.add(rightAlignedLabel("Login :"));            formPanel.add(memberLoginField);
+        formPanel.add(rightAlignedLabel("Mot de passe :"));     formPanel.add(memberPasswordField);
+        formPanel.add(rightAlignedLabel("Email :"));            formPanel.add(memberEmailField);
+        formPanel.add(rightAlignedLabel("Téléphone :"));        formPanel.add(memberPhoneField);
+        formPanel.add(rightAlignedLabel("Date de naissance :")); formPanel.add(memberBirthDateField);
+        formPanel.add(rightAlignedLabel("Poids (kg) :"));       formPanel.add(memberWeightField);
+        formPanel.add(rightAlignedLabel("Adresse :"));          formPanel.add(memberAddressField);
+
+        JButton addButton    = createButton("Ajouter",   COLOUR_SUCCESS);
+        JButton updateButton = createButton("Modifier",  COLOUR_ACCENT);
+        JButton deleteButton = createButton("Supprimer", COLOUR_DANGER);
+        JButton clearButton  = createButton("Effacer",   COLOUR_MUTED);
+
+        addButton.addActionListener(e -> {
+            try {
+                adminController.registerMember(buildMemberFromForm(0));
+                showSuccess(this,"Membre ajouté avec succès.");
+                clearMemberForm();
+                refreshMembersTable();
+            } catch (NumberFormatException ex) { showError(this, "Le poids doit être un nombre valide."); }
+              catch (powerHouseException ex)   { showError(this, ex.getMessage()); }
+        });
+
+        updateButton.addActionListener(e -> {
+            if (selectedMemberId < 0) { showWarning(this, "Veuillez sélectionner un membre dans le tableau."); return; }
+            try {
+                adminController.updateMember(buildMemberFromForm(selectedMemberId));
+                showSuccess(this, "Membre modifié avec succès.");
+                clearMemberForm();
+                refreshMembersTable();
+            } catch (NumberFormatException ex) { showError(this, "Le poids doit être un nombre valide."); }
+              catch (powerHouseException ex)   { showError(this, ex.getMessage()); }
+        });
+
+        deleteButton.addActionListener(e -> {
+            if (selectedMemberId < 0) { showWarning(this, "Veuillez sélectionner un membre dans le tableau."); return; }
+            if (!askConfirmation(this, "Supprimer ce membre ? Toutes ses inscriptions seront également supprimées.")) return;
+            try {
+                adminController.deleteMember(selectedMemberId);
+                showSuccess(this, "Membre supprimé.");
+                clearMemberForm();
+                refreshAll();
+            } catch (powerHouseException ex) { showError(this, ex.getMessage()); }
+        });
+
+        clearButton.addActionListener(e -> clearMemberForm());
+
+        membersTable.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting() && membersTable.getSelectedRow() >= 0) {
+                int row = membersTable.getSelectedRow();
+                selectedMemberId = (int) membersTableModel.getValueAt(row, 0);
+                memberLastNameField.setText(nullToEmpty(membersTableModel.getValueAt(row, 1)));
+                memberFirstNameField.setText(nullToEmpty(membersTableModel.getValueAt(row, 2)));
+                memberLoginField.setText(nullToEmpty(membersTableModel.getValueAt(row, 3)));
+                memberEmailField.setText(nullToEmpty(membersTableModel.getValueAt(row, 4)));
+                memberPhoneField.setText(nullToEmpty(membersTableModel.getValueAt(row, 5)));
+                memberBirthDateField.setText(nullToEmpty(membersTableModel.getValueAt(row, 6)));
+                memberWeightField.setText(nullToEmpty(membersTableModel.getValueAt(row, 7)));
+                memberPasswordField.setText("");
+                memberAddressField.setText("");
+            }
+        });
+
+        return buildTabPanel(formPanel, new JButton[]{addButton, updateButton, deleteButton, clearButton}, membersTable);
+    }
+
+    private member buildMemberFromForm(int memberId) throws powerHouseException {
+        member member = new member();
+        if (memberId > 0) member.setId(memberId);
+        member.setNom(memberLastNameField.getText().trim());
+        member.setPrenom(memberFirstNameField.getText().trim());
+        member.setLogin(memberLoginField.getText().trim());
+        member.setPassword(new String(memberPasswordField.getPassword()));
+        member.setEmail(memberEmailField.getText().trim());
+        member.setTelephone(memberPhoneField.getText().trim());
+        member.setDateNaissance(memberBirthDateField.getText().trim());
+        member.setAdresse(memberAddressField.getText().trim());
+        if (!memberWeightField.getText().trim().isEmpty())
+            member.setPoids(Double.parseDouble(memberWeightField.getText().trim()));
+        return member;
+    }
+
+    private void clearMemberForm() {
+        for (JTextField field : new JTextField[]{memberLastNameField, memberFirstNameField, memberLoginField,
+                memberEmailField, memberPhoneField, memberBirthDateField, memberWeightField, memberAddressField})
+            field.setText("");
+        memberPasswordField.setText("");
+        selectedMemberId = -1;
+        membersTable.clearSelection();
+    }
+    
+
     private JPanel buildTabPanel(JPanel formPanel, JButton[] actionButtons, JTable dataTable) {
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, formPanel, new JScrollPane(dataTable));
         splitPane.setDividerLocation(0.38);
@@ -182,12 +297,23 @@ public class adminDashboard extends JFrame{
 
     private void refreshAll() {
         refreshActivitiesTable();
+        refreshMembersTable();
     }
 
     private void refreshActivitiesTable() {
         try {
             activitiesTableModel.setRowCount(0);
             adminController.listActivitiesWithCount().forEach(row -> activitiesTableModel.addRow(row));
+        } catch (powerHouseException ex) { showError(this, ex.getMessage()); }
+    }
+
+    private void refreshMembersTable() {
+        try {
+            membersTableModel.setRowCount(0);
+            adminController.listAllMembers().forEach(member -> membersTableModel.addRow(new Object[]{
+                member.getId(), member.getNom(), member.getPrenom(), member.getLogin(),
+                member.getEmail(), member.getTelephone(), member.getDateNaissance(), member.getPoids()
+            }));
         } catch (powerHouseException ex) { showError(this, ex.getMessage()); }
     }
 
