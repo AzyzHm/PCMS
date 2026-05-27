@@ -124,6 +124,18 @@ public class memberDAO {
         }
     }
 
+    public void updatePassword(int userId, String newPassword) throws DatabaseException, SecurityException {
+        String sql = "UPDATE users SET password=?, first_login=0 WHERE id=?";
+        try (Connection conn = databaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, passwordHasher.hashPassword(newPassword));
+            ps.setInt(2, userId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new DatabaseException("Erreur lors de la mise à jour du mot de passe", e);
+        }
+    }
+
     public List<member> getAllMembers() throws DatabaseException {
         List<member> list = new ArrayList<>();
         String sql = "SELECT * FROM users WHERE role='MEMBER'";

@@ -13,9 +13,60 @@ import java.util.List;
 import config.databaseConnection;
 
 import exceptions.DatabaseException;
+import exceptions.*;
 
 public class enrollmentDAO {
 
+
+    public void enroll(int userId, int activityId) throws DatabaseException, ActivityFullException, AlreadyEnrolledException {
+        try (Connection conn = databaseConnection.getConnection()) {
+            // Check already enrolled
+            String dupSql = "SELECT COUNT(*) FROM enrollments WHERE user_id=? AND activity_id=?";
+            try (PreparedStatement ps = conn.prepareStatement(dupSql)) {
+                ps.setInt(1, userId);
+                ps.setInt(2, activityId);
+                ResultSet rs = ps.executeQuery();
+                if (rs.next() && rs.getInt(1) > 0) {
+                    throw new AlreadyEnrolledException("Ce membre", "cette activité");
+                }
+            }
+
+            // Check capacity (count accepted + pending)
+            String capSql = "SELECT a.capacite_max, " +
+                            "(SELECT COUNT(*) FROM enrollments WHERE activity_id=? AND status IN ('ACCEPTEE','EN_ATTENTE')) as taken " +
+                            "FROM activities a WHERE a.id=?";
+            try (PreparedStatement ps = conn.prepareStatement(capSql)) {
+                ps.setInt(1, activityId);
+                ps.setInt(2, activityId);
+                ResultSet rs = ps.executeQuery();
+                if (rs.next() && rs.getInt("taken") >= rs.getInt("capacite_max")) {
+                    throw new ActivityFullException("Activité ID " + activityId);
+                }
+            }
+
+            String sql = "INSERT INTO enrollments (user_id, activity_id, status) VALUES (?,?,'EN_ATTENTE')";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setInt(1, userId);
+                ps.setInt(2, activityId);
+                ps.executeUpdate();
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException("Erreur d'inscription", e);
+        }
+    }
+
+    public void cancelEnrollment(int userId, int activityId) throws DatabaseException {
+        String sql = "DELETE FROM enrollments WHERE user_id=? AND activity_id=?";
+        try (Connection conn = databaseConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ps.setInt(2, activityId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new DatabaseException("Erreur lors de l'annulation de l'inscription", e);
+        }
+    }
+            
     public void deleteEnrollment(int enrollmentId) throws DatabaseException {
         String sql = "DELETE FROM enrollments WHERE id=?";
         try (Connection conn = databaseConnection.getConnection();
