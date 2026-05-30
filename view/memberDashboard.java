@@ -2,15 +2,17 @@ package view;
 
 import controllers.adminController;
 import controllers.memberController;
+
 import exceptions.ActivityFullException;
 import exceptions.AlreadyEnrolledException;
 import exceptions.powerHouseException;
+
 import models.member;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
-// Importation magique de toutes les méthodes et couleurs de guiHelper
 import static utils.guiHelper.*;
 
 public class memberDashboard extends JFrame {
@@ -36,6 +38,9 @@ public class memberDashboard extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(true);
+
+        ImageIcon icon = new ImageIcon("icons/Dashboard.png");
+        setIconImage(icon.getImage());
 
         applyTableStyle(availableActivitiesTable);
         applyTableStyle(myEnrollmentsTable);
@@ -100,17 +105,17 @@ public class memberDashboard extends JFrame {
 
     private void handleEnrollment() {
         int selectedRow = availableActivitiesTable.getSelectedRow();
-        if (selectedRow < 0) { showWarning("Veuillez sélectionner une activité."); return; }
+        if (selectedRow < 0) { showWarning(this, "Veuillez sélectionner une activité."); return; }
         int    activityId   = (int) availableActivitiesModel.getValueAt(selectedRow, 0);
         String activityName = nullToEmpty(availableActivitiesModel.getValueAt(selectedRow, 1));
         try {
             memberController.enrollInActivity(loggedInMember, activityId);
-            showSuccess("Votre demande d'inscription à « " + activityName + " » a bien été envoyée.\n"
+            showSuccess(this ,"Votre demande d'inscription à « " + activityName + " » a bien été envoyée.\n"
                       + "Elle est en attente de validation par l'administrateur.");
             refreshAll();
-        } catch (ActivityFullException ex)      { showWarning(ex.getMessage()); }
-          catch (AlreadyEnrolledException ex)   { showWarning(ex.getMessage()); }
-          catch (powerHouseException ex)        { showError(ex.getMessage()); }
+        } catch (ActivityFullException ex)      { showWarning(this, ex.getMessage()); }
+          catch (AlreadyEnrolledException ex)   { showWarning(this, ex.getMessage()); }
+          catch (powerHouseException ex)        { showError(this, ex.getMessage()); }
     }
 
     // ── MY ENROLLMENTS TAB ────────────────────────────────────────────────
@@ -139,56 +144,42 @@ public class memberDashboard extends JFrame {
 
     private void handleCancelEnrollment() {
         int selectedRow = myEnrollmentsTable.getSelectedRow();
-        if (selectedRow < 0) { showWarning("Veuillez sélectionner une inscription à annuler."); return; }
+        if (selectedRow < 0) { showWarning(this, "Veuillez sélectionner une inscription à annuler."); return; }
         String enrollmentStatus = nullToEmpty(myEnrollmentsModel.getValueAt(selectedRow, 4));
         if ("ACCEPTEE".equals(enrollmentStatus)
-                && !askConfirmation("Cette inscription a déjà été acceptée par l'administrateur.\nConfirmer l'annulation ?"))
+                && !askConfirmation(this, "Cette inscription a déjà été acceptée par l'administrateur.\nConfirmer l'annulation ?"))
             return;
         int activityId = (int) myEnrollmentsModel.getValueAt(selectedRow, 1);
         try {
             memberController.cancelEnrollment(loggedInMember, activityId);
-            showSuccess("Votre inscription a été annulée.");
+            showSuccess(this, "Votre inscription a été annulée.");
             refreshAll();
-        } catch (powerHouseException ex) { showError(ex.getMessage()); }
+        } catch (powerHouseException ex) { showError(this, ex.getMessage()); }
     }
 
     private void handlePdfCardDownload() {
         try {
             memberController.downloadMemberCard(loggedInMember);
-            showSuccess("Votre carte membre a été générée dans le dossier de l'application.");
-        } catch (Exception ex) { showError(ex.getMessage()); }
+            showSuccess(this, "Votre carte membre a été générée dans le dossier de l'application.");
+        } catch (Exception ex) { showError(this, ex.getMessage()); }
     }
 
-    // ── REFRESH ───────────────────────────────────────────────────────────
 
-    private void refreshAll() { refreshAvailableActivities(); refreshMyEnrollments(); }
+    private void refreshAll() { 
+        refreshAvailableActivities();
+        refreshMyEnrollments(); }
 
     private void refreshAvailableActivities() {
         try {
             availableActivitiesModel.setRowCount(0);
             adminController.listActivitiesWithCount().forEach(row -> availableActivitiesModel.addRow(row));
-        } catch (powerHouseException ex) { showError(ex.getMessage()); }
+        } catch (powerHouseException ex) { showError(this, ex.getMessage()); }
     }
 
     private void refreshMyEnrollments() {
         try {
             myEnrollmentsModel.setRowCount(0);
             memberController.getMyEnrollments(loggedInMember).forEach(row -> myEnrollmentsModel.addRow(row));
-        } catch (powerHouseException ex) { showError(ex.getMessage()); }
-    }
-
-    // ── HELPERS ───────────────────────────────────────────────────────────
-
-    private String nullToEmpty(Object value) { return value == null ? "" : value.toString(); }
-
-    private void showSuccess(String message) {
-        JOptionPane.showMessageDialog(this, message, "Succès", JOptionPane.INFORMATION_MESSAGE); }
-    private void showWarning(String message) {
-        JOptionPane.showMessageDialog(this, message, "Attention", JOptionPane.WARNING_MESSAGE); }
-    private void showError(String message) {
-        JOptionPane.showMessageDialog(this, message, "Erreur", JOptionPane.ERROR_MESSAGE); }
-    private boolean askConfirmation(String message) {
-        return JOptionPane.showConfirmDialog(this, message, "Confirmation",
-            JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) == JOptionPane.YES_OPTION;
+        } catch (powerHouseException ex) { showError(this, ex.getMessage()); }
     }
 }

@@ -8,9 +8,9 @@ import controllers.adminController;
 
 import models.member;
 
-import static utils.guiHelper.*;
-
 import exceptions.powerHouseException;
+
+import static utils.guiHelper.*;
 
 public class adminDashboard extends JFrame{
 

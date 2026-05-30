@@ -5,63 +5,80 @@ import exceptions.powerHouseException;
 import models.member;
 import javax.swing.*;
 import java.awt.*;
+
+
 import static utils.guiHelper.*;
 
 
 public class ChangePasswordView extends JDialog {
 
+    private final memberController memberController = new memberController();
+    private JPasswordField newPasswordField;
+    private JPasswordField confirmPasswordField;
+    private JButton validateButton;
+
     public ChangePasswordView(Frame parentFrame, member member) {
-        super(parentFrame, "Changement de mot de passe — Premier accès", true);
+        super(parentFrame, "Changement de mot de passe - Premier accès", true);
         setSize(480, 320);
         setLocationRelativeTo(parentFrame);
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         setResizable(false);
 
-        memberController memberController = new memberController();
-        JPasswordField newPasswordField    = new JPasswordField();
-        JPasswordField confirmPasswordField = new JPasswordField();
-        JButton        validateButton       = createButton("Valider", COLOUR_SUCCESS);
+        JLabel titleLabel = new JLabel("Veuillez redéfinir votre mot de passe");
+        titleLabel.setBounds(80, 20, 420, 30);
+        titleLabel.setFont(new Font("Dubai", Font.BOLD, 18));
+        titleLabel.setForeground(COLOUR_ACCENT);
 
-        JPanel formPanel = new JPanel(new GridLayout(0, 2, 6, 10));
-        formPanel.setBorder(BorderFactory.createEmptyBorder(20, 24, 12, 24));
-        formPanel.add(new JLabel("Nouveau mot de passe :"));  formPanel.add(newPasswordField);
-        formPanel.add(new JLabel("Confirmer :"));             formPanel.add(confirmPasswordField);
+        JLabel newPasswordLabel = new JLabel("Nouveau mot de passe :");
+        newPasswordLabel.setBounds(30, 80, 200, 30);
+        newPasswordLabel.setFont(new Font("Dubai", Font.PLAIN, 14));
+        newPasswordLabel.setForeground(COLOUR_ACCENT);
 
-        JLabel hintLabel = new JLabel(
-            "<html><div style='text-align:center'>Minimum 4 caractères.<br>"
-            + "Ce changement est obligatoire lors du premier accès.</div></html>",
-            SwingConstants.CENTER);
-        hintLabel.setFont(new Font("SansSerif", Font.ITALIC, 11));
-        hintLabel.setForeground(COLOUR_MUTED);
+        newPasswordField    = new JPasswordField();
+        newPasswordField.setBounds(230, 80, 200, 30);
+        newPasswordField.setFont(new Font("Dubai", Font.PLAIN, 14));
 
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        validateButton.setPreferredSize(new Dimension(160, 34));
-        buttonPanel.add(validateButton);
 
-        JPanel rootPanel = new JPanel(new BorderLayout(0, 4));
-        rootPanel.add(formPanel,   BorderLayout.NORTH);
-        rootPanel.add(hintLabel,   BorderLayout.CENTER);
-        rootPanel.add(buttonPanel, BorderLayout.SOUTH);
+        JLabel confirmPasswordLabel = new JLabel("Confirmer votre mot de passe :");
+        confirmPasswordLabel.setBounds(30, 135, 200, 30);
+        confirmPasswordLabel.setFont(new Font("Dubai", Font.PLAIN, 14));
+        confirmPasswordLabel.setForeground(COLOUR_ACCENT);
+
+
+        confirmPasswordField = new JPasswordField();
+        confirmPasswordField.setBounds(230, 135, 200, 30);
+        confirmPasswordField.setFont(new Font("Dubai", Font.PLAIN, 14));
+
+        validateButton = createButton("Valider", COLOUR_SUCCESS);
+        validateButton.setFont(new Font("Dubai", Font.BOLD, 16));
+        validateButton.setBounds(150, 200, 160, 34);
+
+        JPanel rootPanel = new JPanel(null);
+        rootPanel.add(titleLabel);
+        rootPanel.add(newPasswordLabel);
+        rootPanel.add(newPasswordField);
+        rootPanel.add(confirmPasswordLabel);
+        rootPanel.add(confirmPasswordField);
+        rootPanel.add(validateButton);
+
         setContentPane(rootPanel);
 
-        validateButton.addActionListener(e -> {
-            String newPassword     = new String(newPasswordField.getPassword());
+        validateButton.addActionListener(e -> changePassword(member));
+    }
+
+    private void changePassword(member member){
+        String newPassword     = new String(newPasswordField.getPassword());
             String confirmPassword = new String(confirmPasswordField.getPassword());
             if (!newPassword.equals(confirmPassword)) {
-                JOptionPane.showMessageDialog(this,
-                    "Les deux mots de passe ne correspondent pas. Veuillez réessayer.",
-                    "Erreur de saisie", JOptionPane.ERROR_MESSAGE);
+                showError(this, "Les deux mots de passe ne correspondent pas. Veuillez réessayer.");
                 return;
             }
             try {
                 memberController.changePassword(member, newPassword);
-                JOptionPane.showMessageDialog(this,
-                    "Votre mot de passe a été mis à jour avec succès.",
-                    "Succès", JOptionPane.INFORMATION_MESSAGE);
+                showSuccess(this, "Votre mot de passe a été changé avec succès.");
                 dispose();
             } catch (powerHouseException ex) {
-                JOptionPane.showMessageDialog(this, ex.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
+                showError(this, ex.getMessage());
             }
-        });
     }
 }
