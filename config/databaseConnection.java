@@ -19,7 +19,7 @@ public class databaseConnection {
         try {
             Connection conn = DriverManager.getConnection(URL);
             try(Statement stmt = conn.createStatement()) {
-                String sql = "PRAGMA foreign_keys = ON;"; // Enable foreign key constraints
+                String sql = "PRAGMA foreign_keys = ON;"; // activer les clés étrangères pour SQLite
                 stmt.execute(sql);
             }
             return conn;

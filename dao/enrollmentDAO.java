@@ -31,7 +31,7 @@ public class enrollmentDAO {
                 }
             }
 
-            // Check capacity (count accepted + pending)
+            // verfier la capacité de l'activité
             String capSql = "SELECT a.capacite_max, " +
                             "(SELECT COUNT(*) FROM enrollments WHERE activity_id=? AND status IN ('ACCEPTEE','EN_ATTENTE')) as taken " +
                             "FROM activities a WHERE a.id=?";
