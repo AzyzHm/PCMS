@@ -68,17 +68,21 @@ public class ChangePasswordView extends JDialog {
 
     private void changePassword(member member){
         String newPassword     = new String(newPasswordField.getPassword());
-            String confirmPassword = new String(confirmPasswordField.getPassword());
-            if (!newPassword.equals(confirmPassword)) {
-                showError(this, "Les deux mots de passe ne correspondent pas. Veuillez réessayer.");
-                return;
-            }
-            try {
-                memberController.changePassword(member, newPassword);
-                showSuccess(this, "Votre mot de passe a été changé avec succès.");
-                dispose();
-            } catch (powerHouseException ex) {
-                showError(this, ex.getMessage());
-            }
+        String confirmPassword = new String(confirmPasswordField.getPassword());
+        if (newPassword.length() < 8 || confirmPassword.length() < 8) {
+            showError(this, "Le mot de passe doit contenir au moins 8 caractères.");
+            return;
+        }
+        if (!newPassword.equals(confirmPassword)) {
+            showError(this, "Les deux mots de passe ne correspondent pas. Veuillez réessayer.");
+            return;
+        }
+        try {
+            memberController.changePassword(member, newPassword);
+            showSuccess(this, "Votre mot de passe a été changé avec succès.");
+            dispose();
+        } catch (powerHouseException ex) {
+            showError(this, ex.getMessage());
+        }
     }
 }

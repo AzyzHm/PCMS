@@ -55,7 +55,7 @@ public class adminDashboard extends JFrame{
         setSize(800, 600);
         setLocationRelativeTo(null);
         setLayout(null);
-        getContentPane().setBackground(new Color(0x1B1931));
+        getContentPane().setBackground(COLOUR_BACKGROUND);
 
         ImageIcon icon = new ImageIcon("icons/AdminSpace.png");
         setIconImage(icon.getImage());
@@ -89,7 +89,7 @@ public class adminDashboard extends JFrame{
         headerBar.setBackground(COLOUR_BACKGROUND);
 
         JLabel titleLabel = new JLabel("POWERHOUSE --- Administration");
-        titleLabel.setForeground(Color.WHITE);
+        titleLabel.setForeground(COLOUR_SUCCESS);
         titleLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
 
         JButton logoutButton = createButton("Déconnexion", COLOUR_DANGER);

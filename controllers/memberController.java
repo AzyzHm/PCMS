@@ -44,7 +44,6 @@ public class memberController {
     }
 
     public void downloadMemberCard(member member) throws ExportException {
-        String fileName = "Carte_PowerHouse_" + member.getNom() + ".pdf";
-        PDFGenerator.generateMemberCard(member, fileName);
+        PDFGenerator.generateMemberCard(member);
     }
 }
