@@ -29,22 +29,21 @@ public class memberController {
         enrollmentDAO.cancelEnrollment(member.getId(), activityId);
     }
 
-    /** Returns [enrollmentId, activityId, activityNom, horaires, status] */
+    // Retourne une liste d'objets contenant les détails de l'inscription (activité, statut, etc.)
     public List<Object[]> getMyEnrollments(member member) throws DatabaseException {
         return enrollmentDAO.getEnrollmentsByUser(member.getId());
     }
 
     public void changePassword(member member, String newPassword)
             throws DatabaseException, SecurityException {
-        if (newPassword == null || newPassword.length() < 4) {
-            throw new SecurityException("Le mot de passe doit contenir au moins 4 caractères", null);
+        if (newPassword == null || newPassword.length() < 8) {
+            throw new SecurityException("Le mot de passe doit contenir au moins 8 caractères", null);
         }
         memberDAO.updatePassword(member.getId(), newPassword);
         member.setFirstLogin(false);
     }
 
     public void downloadMemberCard(member member) throws ExportException {
-        String fileName = "Carte_PowerHouse_" + member.getNom() + ".pdf";
-        PDFGenerator.generateMemberCard(member, fileName);
+        PDFGenerator.generateMemberCard(member);
     }
 }

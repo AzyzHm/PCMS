@@ -31,21 +31,21 @@ public class loginView extends JFrame {
         setIconImage(icon.getImage());
 
         JLabel titleLabel = new JLabel("Veuillez vous connecter");
-        titleLabel.setForeground(Color.red);
+        titleLabel.setForeground(COLOUR_SUCCESS);
         titleLabel.setBounds(220, 60, 500, 50);
         titleLabel.setFont(new Font("Dubai", Font.BOLD, 30));
         add(titleLabel);
 
         JLabel usernameLabel = new JLabel("Nom d'utilisateur:");
         usernameLabel.setBounds(100, 150, 250, 50);
-        usernameLabel.setForeground(Color.WHITE);
-        usernameLabel.setFont(new Font("Dubai", Font.PLAIN, 25));
+        usernameLabel.setForeground(COLOUR_DARK);
+        usernameLabel.setFont(new Font("Dubai", Font.BOLD, 25));
         add(usernameLabel);
 
         JLabel passwordLabel = new JLabel("Mot de passe:");
         passwordLabel.setBounds(100, 250, 250, 50);
-        passwordLabel.setForeground(Color.WHITE);
-        passwordLabel.setFont(new Font("Dubai", Font.PLAIN, 25));
+        passwordLabel.setForeground(COLOUR_DARK);
+        passwordLabel.setFont(new Font("Dubai", Font.BOLD, 25));
         add(passwordLabel);
 
         loginField = new JTextField();
@@ -60,6 +60,8 @@ public class loginView extends JFrame {
 
         JButton loginButton = new JButton("Login");
         loginButton.setBounds(300, 370, 150, 50);
+        loginButton.setBackground(COLOUR_SUCCESS);
+        loginButton.setForeground(Color.WHITE);
         loginButton.setFont(new Font("Dubai", Font.PLAIN, 30));
         add(loginButton);
 
@@ -71,27 +73,27 @@ public class loginView extends JFrame {
         String password = new String(passwordField.getPassword());
 
         if (username.isEmpty() || password.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                "Veuillez remplir tous les champs.", "Champs manquants", JOptionPane.WARNING_MESSAGE);
-            return;
+            showError(this, "Veuillez remplir tous les champs.");
         }
 
         if (username.length() < 6 || password.length() < 8) {
-            JOptionPane.showMessageDialog(this,
-                "Le nom d'utilisateur doit comporter au moins 6 caractères et le mot de passe au moins 8 caractères.",
-                "Champs invalides", JOptionPane.WARNING_MESSAGE);
+            showError(this, "Le nom d'utilisateur doit comporter au moins 6 caractères et le mot de passe au moins 8 caractères.");
             return;
         }
 
         try {
             user authenticatedUser = authController.login(username, password);
-            if (authenticatedUser instanceof admin) new adminDashboard().setVisible(true);
-
-            else new memberDashboard((member) authenticatedUser).setVisible(true);
+            if (authenticatedUser instanceof admin) {
+                showSuccess(this, "Connexion réussie en tant qu'administrateur !");
+                new adminDashboard().setVisible(true);
+            }
+            else {
+                showSuccess(this, "Connexion réussie en tant que membre !");
+                new memberDashboard((member) authenticatedUser).setVisible(true);
+            }
             dispose();
         } catch (powerHouseException exception) {
-            JOptionPane.showMessageDialog(this,
-            exception.getMessage(), "Identifiants invalides", JOptionPane.ERROR_MESSAGE);
+            showError(this, exception.getMessage());
             passwordField.setText("");
         }
     }

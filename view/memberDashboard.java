@@ -30,7 +30,6 @@ public class memberDashboard extends JFrame {
     private final JTable myEnrollmentsTable = new JTable(myEnrollmentsModel);
 
     public memberDashboard(member member) {
-        // CORRECTION : On initialise la variable globale immédiatement pour éviter le NullPointerException
         this.loggedInMember = member;
 
         setTitle("PowerHouse – Tableau de bord - Tableau de bord de " + member.getNom());
@@ -60,15 +59,14 @@ public class memberDashboard extends JFrame {
             SwingUtilities.invokeLater(() -> new ChangePasswordView(this, member).setVisible(true));
     }
 
-    // ── HEADER BAR ────────────────────────────────────────────────────────
+    // l'en-tête avec le nom du membre et le bouton de déconnexion
 
     private JPanel buildHeaderBar() {
         JPanel headerBar = new JPanel(new BorderLayout());
         headerBar.setBackground(COLOUR_DARK);
         headerBar.setBorder(BorderFactory.createEmptyBorder(6, 12, 6, 12));
 
-        // Utilise maintenant loggedInMember initialisé en toute sécurité
-        JLabel titleLabel = new JLabel("⚡ POWERHOUSE  —  " + loggedInMember.getLogin().toUpperCase());
+        JLabel titleLabel = new JLabel("POWERHOUSE  —  " + loggedInMember.getLogin().toUpperCase());
         titleLabel.setForeground(Color.WHITE);
         titleLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
 
@@ -81,7 +79,7 @@ public class memberDashboard extends JFrame {
         return headerBar;
     }
 
-    // ── AVAILABLE ACTIVITIES TAB ───────────────────────────────────────────
+    // la fenetre des activités disponibles
 
     private JPanel buildAvailableActivitiesTab() {
         JButton enrollButton  = createButton("S'inscrire",  COLOUR_SUCCESS);
@@ -118,7 +116,7 @@ public class memberDashboard extends JFrame {
           catch (powerHouseException ex)        { showError(this, ex.getMessage()); }
     }
 
-    // ── MY ENROLLMENTS TAB ────────────────────────────────────────────────
+    // la fenetre de mes inscriptions
 
     private JPanel buildMyEnrollmentsTab() {
         JButton cancelButton  = createButton("Annuler l'inscription", COLOUR_DANGER);

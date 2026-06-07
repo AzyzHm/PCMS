@@ -8,7 +8,7 @@ import javax.swing.table.DefaultTableModel;
 
 public class guiHelper{
 
-    public static final Color COLOUR_BACKGROUND = new Color(0x1B1931);
+    public static final Color COLOUR_BACKGROUND = new Color(245, 247 , 250);
     public static final Color COLOUR_ACCENT     = new Color(30,  90,  200);
     public static final Color COLOUR_DANGER     = new Color(190, 35,  35);
     public static final Color COLOUR_SUCCESS    = new Color(30,  140, 70);
