@@ -148,9 +148,9 @@ CREATE TABLE enrollments (
 ```
 
 ### Utilisateur Admin par Défaut
-- **Login:** AzyzHm
-- **Mot de passe:** AzyzHm0110
-- **Email:** AzyzHm@gmail.com
+- **Login:** Admin
+- **Mot de passe:** Admin123
+- **Email:** Admin@gmail.com
 
 ---
 
@@ -438,205 +438,7 @@ public static void initializeDatabase() throws DatabaseException, SecurityExcept
 
 ---
 
-## 13. 🚨 PROBLÈMES POSSIBLES
-
-### 13.1 Activités Récurrentes Multi-Jours (Limitation Critique)
-
-**Problème:** Une activité ne peut avoir qu'un seul créneau horaire stocké dans le champ `horaires` (String). Impossible de représenter une activité récurrente sur plusieurs jours.
-
-**Scénario problématique:**
-- Activité: "Séance de Gym"
-- Horaires actuels: "Mardi 18h00-19h00"
-- ❌ Impossible d'ajouter: "Vendredi 18h00-19h00" sans perdre le mardi
-- ❌ Le système ne peut pas représenter l'ID comme identifiant l'activité "Gym" avec sessions multiples
-
-**Impact:** 
-- Duplication d'activités pour chaque jour/heure
-- Capacité maximale partagée entre différentes sessions de même activité
-- Confusion administrative
-
-**Solution recommandée:**
-Créer une table `sessions` avec structure:
-```sql
-CREATE TABLE sessions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    activity_id INTEGER NOT NULL,
-    day_of_week TEXT,  -- "LUNDI", "MARDI", etc.
-    start_time TIME,
-    end_time TIME,
-    FOREIGN KEY(activity_id) REFERENCES activities(id)
-);
-```
-
----
-
-### 13.2 Bug dans l'Ajout/Modification d'Activités
-
-**Problème:** La contrainte UNIQUE(user_id, activity_id) permet une double inscription sans cohérence.
-
-**Scénario problématique:**
-
-1. **Inscription initiale** (statut: EN_ATTENTE)
-2. Admin refuse → Statut EN_ATTENTE devient REFUSEE
-3. Membre réessaye de s'inscrire → ❌ ERREUR (déjà dans la BD)
-4. Alternative: Membre annule → Suppression BD → Réinscription via UI → 🐛 État incohérent
-
-**Cas du bug majeur:**
-- Modification d'une activité existante peut envoyer une notification fictive
-- L'updateActivity() peut laisser traîner des inscriptions obsolètes
-- Pas de vérification de cohérence entre l'ajout et la modification
-
-**Code vulnérable:**
-```java
-public void enroll(int userId, int activityId) 
-    throws DatabaseException, ActivityFullException, AlreadyEnrolledException {
-    // Vérification de doublons (ne compte QUE EN_ATTENTE+ACCEPTEE)
-    String dupSql = "SELECT COUNT(*) FROM enrollments WHERE user_id=? AND activity_id=?";
-    // ❌ Cette requête NE filtre PAS sur le statut
-    // ❌ Donc REFUSEE compte comme "déjà inscrit"
-}
-```
-
-**Impact:**
-- Membres bloqués de se réinscrire après refus
-- Impossible de modifier une inscription sans la supprimer
-- Pas de traçabilité des modifications d'activités
-
-**Solution recommandée:**
-```java
-String dupSql = "SELECT COUNT(*) FROM enrollments 
-                 WHERE user_id=? AND activity_id=? 
-                 AND status IN ('EN_ATTENTE', 'ACCEPTEE')"; 
-                 // ✅ Compter SEULEMENT les actives
-```
-
----
-
-### 13.3 Interface Graphique Obsolète (JavaFX Migration)
-
-**Problème:** L'application utilise Swing (2001), obsolète et esthétiquement limité.
-
-**Limitations actuelles:**
-- ❌ Design datée, non responsive
-- ❌ Pas de support mobile/tactile
-- ❌ Courbe d'apprentissage Swing élevée pour nouvelles features
-- ❌ Performances médiocres sur écrans modernes
-- ❌ Accessibilité faible (contraste, police)
-
-**Scénarios de limitation:**
-- Tableaux non redimensionnables correctement
-- Pas d'animations
-- Gestion de thème très manuelle
-- Mise en page rigide
-
-**Solution recommandée: Migration JavaFX**
-
-**Avantages:**
-- ✅ Moderne et responsive
-- ✅ Support CSS pour styling
-- ✅ Meilleures performances
-- ✅ FXML pour séparation Vue/Logique
-- ✅ Composants plus riches
-
-**Exemple FXML:**
-```xml
-<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
-    <Label text="PowerHouse Club" styleClass="title"/>
-    <TableView fx:id="activitiesTable"/>
-</VBox>
-```
-
-**Effort estimé:** 3-4 semaines pour migration complète
-
----
-
-### 13.4 Validations Insuffisantes dans les Modèles
-
-**Problème:** Champs critiques `nom` et `prenom` des utilisateurs sans validation adéquate.
-
-**Validations manquantes:**
-
-| Champ | Validation actuelle | Validation requise | Problème |
-|-------|-------------------|-------------------|---------|
-| `user.nom` | ❌ Aucune | Chaîne 3-20 caractères, alphanumérique+espace | Noms vides, trop longs, caractères spéciaux |
-| `user.prenom` | ❌ Aucune | Chaîne 3-20 caractères, alphanumérique+espace | Identique au nom |
-| `member.DateNaissance` | ❌ Aucune | Format DATE valide | Dates incohérentes |
-| `member.Telephone` | ❌ Aucune | Format international/local | Numéros invalides |
-| `activity.Horaire` | ❌ Aucune | Format TIME/DATETIME | Horaires illisibles |
-
-**Scénarios problématiques:**
-
-```java
-// ❌ Actuellement accepté
-member.setNom("");                    // Vide!
-member.setNom("A");                   // 1 caractère
-member.setNom("Jean@#$%Antoine");     // Caractères invalides
-member.setNom("This is a very long name that exceeds limits"); // Trop long
-member.setDateNaissance("31/13/2025"); // Date invalide
-
-// ✅ Devrait être rejeté
-```
-
-**Impact:**
-- Données corrompues en base
-- Affichage troncaturé dans les interfaces
-- Conflits dans les exports PDF
-- Difficultés administratives pour trouver des membres
-
-**Solution recommandée:**
-
-```java
-public void setNom(String nom) throws ValidationException {
-    if (nom == null || nom.trim().isEmpty()) {
-        throw new ValidationException("nom", 
-            "Le nom ne peut pas être vide");
-    }
-    if (nom.length() < 3 || nom.length() > 20) {
-        throw new ValidationException("nom", 
-            "Le nom doit contenir entre 3 et 20 caractères");
-    }
-    if (!nom.matches("^[a-zA-Zàâäéèêëïîôùûüœç\\s-]+$")) {
-        throw new ValidationException("nom", 
-            "Le nom ne peut contenir que des lettres, espaces et tirets");
-    }
-    this.nom = nom.trim();
-}
-
-public void setPrenom(String prenom) throws ValidationException {
-    // Même validation que nom
-    setNom(prenom); // Réutiliser la validation
-    this.prenom = prenom.trim();
-}
-
-// Formats de date avec LocalDate
-public void setDateNaissance(LocalDate date) throws ValidationException {
-    LocalDate now = LocalDate.now();
-    if (date.isAfter(now)) {
-        throw new ValidationException("DateNaissance", 
-            "La date de naissance doit être dans le passé");
-    }
-    if (Period.between(date, now).getYears() > 120) {
-        throw new ValidationException("DateNaissance", 
-            "Âge invalide");
-    }
-    this.DateNaissance = date;
-}
-```
-
----
-
-### Résumé des Priorités de Correction
-
-| Problème | Sévérité | Effort | Priorité |
-|----------|----------|--------|----------|
-| Activités multi-jours | 🔴 Critique | Moyen | 1️⃣ Haute |
-| Bug inscription/modification | 🔴 Critique | Faible | 1️⃣ Haute |
-| Validations modèles | 🟠 Important | Faible | 2️⃣ Moyenne |
-| Migration JavaFX | 🟡 Souhaitable | Élevé | 3️⃣ Basse |
-
----
-
-## 14. Technologies et Dépendances
+## 13. Technologies et Dépendances
 
 - **Langage:** Java (JDK 11+)
 - **Interface:** Swing (AWT)
@@ -646,7 +448,7 @@ public void setDateNaissance(LocalDate date) throws ValidationException {
 
 ---
 
-## 15. Déploiement et Maintenance
+## 14. Déploiement et Maintenance
 
 ### Démarrage
 ```bash
@@ -661,10 +463,5 @@ java Main
 
 ### Sauvegarde
 Copier régulièrement powerhouse.db pour éviter la perte de données.
-
----
-
-**Documentation générée le:** 2026-06-07  
-**Version du système:** 1.0  
 
 

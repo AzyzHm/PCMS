@@ -71,8 +71,8 @@ public class databaseConnection {
             String checkAdmin = "SELECT COUNT(*) FROM users WHERE role = 'ADMIN'";
             var rs = stmt.executeQuery(checkAdmin);
             if (rs.next() && rs.getInt(1) == 0) {
-                String hashedAdminPass = passwordHasher.hashPassword("AzyzHm0110");
-                String insertAdmin = "INSERT INTO users (role, login, password, email, nom, first_login) VALUES ('ADMIN', 'AzyzHm', '" + hashedAdminPass + "','AzyzHm@gmail.com' ,'Azyz', 0)";
+                String hashedAdminPass = passwordHasher.hashPassword("Admin123");
+                String insertAdmin = "INSERT INTO users (role, login, password, email, nom, first_login) VALUES ('ADMIN', 'Admin', '" + hashedAdminPass + "','Admin@gmail.com' ,'Admin', 0)";
                 stmt.execute(insertAdmin);
             }
             System.out.println("Base de données initialisée avec succès.");
